@@ -3,7 +3,6 @@ import run from "aocrunner";
 const parseInput = (rawInput: string) => rawInput;
 
 const part1 = (rawInput: string) => {
-  const input = parseInput(rawInput);
   const expression = new RegExp(/mul\(\d+,\d+\)/g);
   const instructions = rawInput.match(expression);
   const mul = new RegExp(/mul\((\d+),(\d+)\)/)
@@ -15,27 +14,24 @@ const part1 = (rawInput: string) => {
 };
 
 const part2 = (rawInput: string) => {
-  const input = parseInput(rawInput);
-  const expression = new RegExp(/(mul\(\d+,\d+\))|(don't\(\))|(do\(\))/g);
-  const mul = new RegExp(/mul\((\d+),(\d+)\)/)
+  const instructions = new RegExp(/(mul\(\d+,\d+\))|(don't\(\))|(do\(\))/g);
+  const cmd_mul = new RegExp(/mul\((\d+),(\d+)\)/)
   const cmd_dont = "don't()";
   const cmd_do = 'do()';
-  const instructions = rawInput.match(expression);
+  const program = rawInput.match(instructions);
   let processing = true;
-  return instructions?.reduce((prev,cmd) => {
+  return program?.reduce((prev,cmd) => {
     switch (cmd) {
       case cmd_do: processing = true; return prev;
       case cmd_dont: processing = false; return prev;
     }
     if (processing) {
-      const hits = mul.exec(cmd);
-      const [a,b] = [parseInt(hits![1]), parseInt(hits![2])]
+      const matches = cmd_mul.exec(cmd);
+      const [a,b] = [parseInt(matches![1]), parseInt(matches![2])]
       return prev + (a*b);
     }
     return prev;
   },0)
-
-  return;
 };
 
 run({
