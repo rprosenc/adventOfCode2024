@@ -7,7 +7,7 @@ const part1 = (rawInput: string) => {
   const left:number[] = [];
   const right:number[] = [];
   input.split('\n').forEach(line=>{
-    const [l, r] = line.split(' ').filter(c=>c).map(i=>parseInt(i));
+    const [l, r] = line.split(/\s+/).map(i=>parseInt(i));
     left.push(l);
     right.push(r);
   })
@@ -30,7 +30,7 @@ const part2 = (rawInput: string) => {
   const left:number[] = [];
   const right:number[] = [];
   input.split('\n').forEach(line=>{
-    const [l, r] = line.split(' ').filter(c=>c).map(i=>parseInt(i));
+    const [l, r] = line.split(/\s+/).map(i=>parseInt(i));
     left.push(l);
     right.push(r);
   })
