@@ -41,7 +41,13 @@ const xmas315 = (x:number, y:number, field:string[][]) => {
 }
 
 const xmas = (x:number, y:number, field:string[][]) => {
-  return xmas0(x,y, field) + xmas45(x,y, field) +  xmas90(x,y, field) +  xmas135(x,y, field) +  xmas180(x,y, field) +  xmas225(x,y, field) +  xmas270(x,y, field) +  xmas315(x,y, field);
+  return (
+               xmas0(x,y, field) 
+    +xmas315(x,y, field) +xmas45(x,y, field) 
+  +xmas270(x,y, field)       +xmas90(x,y, field) 
+    +xmas225(x,y, field) +xmas135(x,y, field) 
+              +xmas180(x,y, field)
+  );
 }
 
 const part1 = (rawInput: string) => {
@@ -69,7 +75,7 @@ const mas = (x:number, y:number, field:string[][]) => {
   if (x<1) return 0; // no space left
   let matches = 0;
   const stencils = ['MMSS', 'SMSM' , 'SSMM', 'MSMS'];
-  
+
   stencils.forEach(s=>{
     const chars= s.split('');
     matches += (
