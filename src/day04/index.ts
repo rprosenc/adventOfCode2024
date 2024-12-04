@@ -62,43 +62,25 @@ const part1 = (rawInput: string) => {
  * PART II
  */
 
-const mas1 = (x:number, y:number, field:string[][]) => {
-  return (
-    field[x-1][y-1] === 'M' && field[x+1][y-1] === 'M'
-               && field[x][y] === 'A' &&
-    field[x-1][y+1] === 'S' && field[x+1][y+1]  === 'S'
-    &&  1 || 0);
-}
-const mas2 = (x:number, y:number, field:string[][]) => {
-  return (
-    field[x-1][y-1] === 'S' && field[x+1][y-1]  === 'M'
-               && field[x][y] === 'A' &&
-    field[x-1][y+1] === 'S' && field[x+1][y+1]  === 'M'
-    &&  1 || 0);
-}
-const mas3 = (x:number, y:number, field:string[][]) => {
-  return (
-    field[x-1][y-1] === 'S' && field[x+1][y-1]  === 'S'
-               && field[x][y] === 'A' &&
-    field[x-1][y+1] === 'M' && field[x+1][y+1]  === 'M'
-    &&  1 || 0);
-}
-const mas4 = (x:number, y:number, field:string[][]) => {
-  return (
-    field[x-1][y-1] === 'M' && field[x+1][y-1]  === 'S'
-               && field[x][y] === 'A' &&
-    field[x-1][y+1] === 'M' && field[x+1][y+1]  === 'S'
-    &&  1 || 0);
-}
-
 const mas = (x:number, y:number, field:string[][]) => {
   if (y<1) return 0; // no space up
   if (x+1>=field.length) return 0; // no space right
   if (y+1>=field[x].length) return 0; // no space down
   if (x<1) return 0; // no space left
-  return mas1(x,y, field) + mas2(x,y, field) +  mas3(x,y, field) +  mas4(x,y, field) ;
-
+  let matches = 0;
+  const stencils = ['MMSS', 'SMSM' , 'SSMM', 'MSMS'];
+  
+  stencils.forEach(s=>{
+    const chars= s.split('');
+    matches += (
+    field[x-1][y-1] === chars[0] && field[x+1][y-1] === chars[1]
+               && field[x][y] === 'A' &&
+    field[x-1][y+1] === chars[2] && field[x+1][y+1]  === chars[3]
+    &&  1 || 0);
+  })
+  return matches;
 }
+
 
 const part2 = (rawInput: string) => {
   const input = parseInput(rawInput);
@@ -154,5 +136,5 @@ run({
     solution: part2,
   },
   trimTestInputs: true,
-  onlyTests: false,
+  onlyTests: true,
 });
