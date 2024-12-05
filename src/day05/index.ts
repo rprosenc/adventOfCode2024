@@ -17,18 +17,9 @@ interface Input {
   updates: number[][];
 }
 
-const part1 = (rawInput: string) => {
-  const input: Input = parseInput(rawInput);
-
-  const workingUpdates = [];
-  let middlePagesSum = 0;
-  // console.log(input);
-  for (let i = 0; i < input.updates.length; i++) {
-    const update = input.updates[i];
-    // console.log(input)
-    let valid = true;
-    for (let j = 0; j < input.rules.length; j++) {
-      const rule = input.rules[j];
+const isUpdateValid = (rules:number[][], update:number[]) => {
+    for (let j = 0; j < rules.length; j++) {
+      const rule = rules[j];
       const [before, after] = rule;
       const bIndex = update.indexOf(before);
       const aIndex = update.indexOf(after);
@@ -38,60 +29,41 @@ const part1 = (rawInput: string) => {
       }
       if (bIndex > aIndex) {
         // rule is broken
-        valid = false;
-        break;
+        return false
       }
     }
-    if (valid) {
-      workingUpdates.push(update);
-      middlePagesSum += update[Math.floor(update.length / 2)];
-    }
-  }
+
+    return true;
+}
+
+const middlePage = (update:number[]) => update[Math.floor(update.length / 2)];
+
+
+const part1 = (rawInput: string) => {
+  const input: Input = parseInput(rawInput);
+
+  let middlePagesSum = 0;
+  input.updates
+    .filter(update=>isUpdateValid(input.rules, update))
+    .forEach(update=>middlePagesSum += middlePage(update));
+    
   return middlePagesSum;
 };
 
 const part2 = (rawInput: string) => {
   const input: Input = parseInput(rawInput);
 
-  const workingUpdates = [];
-  const brokenUpdates = [];
-  const fixedUpdates = [];
   let middlePagesSum = 0;
-  // console.log(input);
-  for (let i = 0; i < input.updates.length; i++) {
-    const update = input.updates[i];
-    // console.log(input)
-    let valid = true;
-    for (let j = 0; j < input.rules.length; j++) {
-      const rule = input.rules[j];
-      const [before, after] = rule;
-      const bIndex = update.indexOf(before);
-      const aIndex = update.indexOf(after);
-      if (bIndex < 0 || aIndex < 0) {
-        // rule does not apply
-        continue;
-      }
-      if (bIndex > aIndex) {
-        // rule is broken
-        valid = false;
-        break;
-      }
-    }
-    if (valid) {
-      workingUpdates.push(update);
-    } else {
-      brokenUpdates.push(update);
-    }
-  }
 
+  const brokenUpdates = input.updates.filter(update=>!isUpdateValid(input.rules, update));
 
   // fix broken updates
   for (let i = 0; i < brokenUpdates.length; i++) {
     const update = brokenUpdates[i];
 
-    let repeat = 1;
+    let repeat = true;
     while(repeat) {
-      repeat--;
+      repeat = false;
       for (let j = 0; j < input.rules.length; j++) {
         const rule = input.rules[j];
         const [before, after] = rule;
@@ -102,14 +74,13 @@ const part2 = (rawInput: string) => {
           continue;
         }
         if (bIndex > aIndex) {
-          console.log(rule, update);
           [update[aIndex],update[bIndex]] = [update[bIndex], update[aIndex]];
-          // if an error was found, make sure repeat check of that update
-          repeat = 1;
+          // if an error was found, make sure to repeat check of that update
+          repeat = true;
         }
       }
     }
-  middlePagesSum += update[Math.floor(update.length / 2)];
+  middlePagesSum += middlePage(update);
   }
 
   return middlePagesSum;
