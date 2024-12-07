@@ -10,7 +10,10 @@
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
-    "importHelpers": true
+    "importHelpers": true,
+    "lib":[
+      "ES2021.String"
+    ]
   },
   "include": [
     "src"
