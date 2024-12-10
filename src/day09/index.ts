@@ -120,7 +120,6 @@ const part1 = (rawInput: string) => {
 const part2 = (rawInput: string) => {
   const input = parseInput(rawInput);
   const files: (File | Space)[] = [];
-  const fileIdPositions:number[] = [];
   let id = 0;
   let c: string;
   for (let i = 0; i < input.length; i++) {
@@ -130,86 +129,77 @@ const part2 = (rawInput: string) => {
     } else {
       files.push({ id, size, type: "file" } as File);
       id++;
-      fileIdPositions[id] = i;
     }
   }
   // console.log(input);
+  // console.log(files.map(f=>({size:f.size, type:f.type, id:f?.id})));
 
-  let oneMoreRun = true;
-
-  while (oneMoreRun) {
-    oneMoreRun = false;
-
+  // move last-most file into leftmost possible space
+  for (let i = id; i >= 0; i--) {
     // consolidate ALL spaces
     for (let s = 0; s < files.length; s++) {
       if (files[s].type === "space") {
         for (
           let ss = s + 1;
           ss < files.length && files[ss].type === "space";
+
         ) {
           files[s].size = files[s].size + files[ss].size;
           files.splice(ss, 1);
         }
       }
     }
-    // console.log(files.map(f=>({size:f.size, type:f.type, id:f?.id})));
 
-    // move last-most file into leftmost possible space
-    for (let f = files.length - 1; f >= 0; f--) {
-      // console.log('consolidated');
+    // find file with currently moving ID
+    const f = files.findIndex((_f) => _f.type === "file" && _f.id === i);
+    if (f < 0) continue; // strange...
 
-      if (files[f].type === "space") {
-        continue;
-      }
-      const file = files[f];
-      for (let s = 0; s < f; s++) {
-        let space = files[s];
-        if (space.type === "space" && space.size >= file.size) {
-          // found space at j
+    const file = files[f];
+    // look for space LEFT OF FILE
+    for (let s = 0; s < f; s++) {
+      let space = files[s];
+      if (space.type === "space" && space.size >= file.size) {
+        // found space at j
 
-          // replace file with space (need to do before splicing)
-          files[f] = { type: "space", size: file.size };
+        // replace file with space (need to do before splicing)
+        files[f] = { type: "space", size: file.size };
 
-          // console.log({sp:space, spi:files[s], f,s})
+        // squeeze file in front of space
+        files.splice(s, 0, file);
 
-          // squeeze file in front of space
-          files.splice(s, 0, file);
+        // shorten available space
+        space.size = space.size - file.size;
 
-          // shorten available space
-          space.size = space.size - file.size;
-
-          // delete space if used up
-          if (space.size <= 0) {
-            files.splice(s + 1, 1);
-          }
-          oneMoreRun = true;
-          break;
+        // delete space if used up
+        if (space.size <= 0) {
+          files.splice(s + 1, 1);
         }
-      }
-      if (oneMoreRun) {
         break;
       }
     }
   }
 
-
-  const blocks:Block[] = [];
+  const blocks: Block[] = [];
 
   files.forEach((f) => {
-    if (f.type === 'file') {
-      blocks.push(...(Array.from({ length: f.size }, () => ({id:f.id, empty: false,}))))
+    if (f.type === "file") {
+      blocks.push(
+        ...Array.from({ length: f.size }, () => ({ id: f.id, empty: false })),
+      );
     }
-    if (f.type === 'space') {
-      blocks.push(...(Array.from({ length: f.size }, () => ({id:0, empty: true,}))))
+    if (f.type === "space") {
+      blocks.push(
+        ...Array.from({ length: f.size }, () => ({ id: 0, empty: true })),
+      );
     }
-  })
+  });
   // console.log(blocks);
   const checksum = blocks.reduce(
     (prev: number, cur: Block, i) => prev + cur.id * i,
     0,
   );
   // console.log(blocksAsString);
-  console.log(blocks.map((b) => (b.empty ? EMPTY : b.id)).join(""));
+  // console.log(blocks.map((b) => (b.empty ? EMPTY : b.id)).join(""));
   // console.log(blocks.map((b,i)=>`${i*b.id}`).join('+'))
 
   return checksum;
@@ -258,11 +248,11 @@ run({
   },
   part2: {
     tests: [
-      // {
-      //   input: `13234`,
-      //   // expected: '0...11..222' => '022211....' => 0*0 + 1*2 + 2*2 + 3*1 + 4*1 + 5*1 + 6*2 + 7*2 + 8*2  = 60
-      //   expected: 65,
-      // },
+      {
+        input: `13234`,
+        // expected: '0...11..222' => '022211....' => 0*0 + 1*2 + 2*2 + 3*1 + 4*1 + 5*1 + 6*2 + 7*2 + 8*2  = 60
+        expected: 87,
+      },
       {
         input: `2333133121414131402`,
         // expected: '00...111...2...333.44.5555.6666.777.888899',
@@ -272,5 +262,5 @@ run({
     solution: part2,
   },
   trimTestInputs: true,
-  onlyTests: true,
+  onlyTests: false,
 });

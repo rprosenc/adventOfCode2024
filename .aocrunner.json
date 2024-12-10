@@ -124,20 +124,20 @@
     },
     {
       "part1": {
-        "solved": false,
-        "result": "6617846138749",
+        "solved": true,
+        "result": "6448989155953",
         "attempts": [
           "8423873132116",
           "6457222230650",
           "6617846138749"
         ],
-        "time": 32774.928709
+        "time": 37744.121
       },
       "part2": {
-        "solved": false,
-        "result": null,
+        "solved": true,
+        "result": "6476642796832",
         "attempts": [],
-        "time": null
+        "time": 667.070709
       }
     },
     {
