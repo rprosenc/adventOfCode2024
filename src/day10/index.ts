@@ -87,9 +87,30 @@ const part1 = (rawInput: string) => {
 
 const part2 = (rawInput: string) => {
   const input = parseInput(rawInput);
+  // console.log(input);
+  // reset globals
 
-  return;
-};
+  // find trailHeads
+  let result = 0;
+  for (let i = 0; i < input.length; i++) {
+    for (let j = 0; j < input[i].length; j++) {
+      if (input[i][j] === 0) {
+        allTrailPaths = [];
+        allDestinations = [];
+        findTrails(input, 0, i, j, 0, [[i,j]]);
+        const flattenPaths = allTrailPaths.map(p=>p.map(coord=>coord.join('/')).join(' '));
+        // const uniqueDestinations = new Set(allDestinations.map(([x,y])=>`${x}/${y}`));
+        const rating = flattenPaths.length;
+        result += rating;
+
+        // console.log(`${i}/${j} - ${score}`)
+       }
+    }
+  }
+// console.log(flattenPaths)
+// console.log('s',(new Set(flattenPaths)).size);
+
+  return result;};
 
 run({
   part1: {
@@ -172,10 +193,31 @@ run({
   },
   part2: {
     tests: [
-      // {
-      //   input: ``,
-      //   expected: "",
-      // },
+      {
+        input: `
+        .....0.
+        ..4321.
+        ..5..2.
+        ..6543.
+        ..7..4.
+        ..8765.
+        ..9....
+        `,
+        expected: 3,
+      },
+      {
+        input: `
+        89010123
+        78121874
+        87430965
+        96549874
+        45678903
+        32019012
+        01329801
+        10456732
+        `,
+        expected: 81,
+      },
     ],
     solution: part2,
   },
