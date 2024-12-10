@@ -8,6 +8,16 @@ type Block = {
   empty: boolean;
 };
 
+type File = {
+  id: number;
+  type: "file";
+  size: number;
+};
+type Space = {
+  type: "space";
+  size: number;
+};
+
 /*
 
 import inquirer from 'inquirer';
@@ -31,20 +41,20 @@ const BLOCK = "x";
 
 const indexes = (blocks: Block[]) => {
   const stringified = blocks.map((b) => (b.empty ? EMPTY : BLOCK)).join("");
+  // console.log(stringified);
   const lastDataIndex = stringified.lastIndexOf(BLOCK);
   const firstEmptyIndex = stringified.indexOf(EMPTY);
   return { lastDataIndex, firstEmptyIndex };
 };
 
 const part1 = (rawInput: string) => {
-  const diskmap = parseInput(rawInput);
+  const input = parseInput(rawInput);
   // console.log({input})
-  const fileList = [];
   const blocks: Block[] = [];
   let id = 0;
   let c: string;
-  for (let i = 0; i < diskmap.length; i++) {
-    const length = diskmap[i];
+  for (let i = 0; i < input.length; i++) {
+    const length = input[i];
     if (i % 2) {
       blocks.push(...Array.from({ length }, () => ({ id: 0, empty: true })));
     } else {
@@ -52,11 +62,17 @@ const part1 = (rawInput: string) => {
       id++;
     }
   }
+  // console.log(input);
+  // console.log(blocks);
 
   let i = 0;
   let idx = indexes(blocks);
   let { lastDataIndex, firstEmptyIndex } = idx;
-  while (i < diskmap.length && lastDataIndex > firstEmptyIndex && firstEmptyIndex>=0) {
+  while (
+    i < input.length * 2 &&
+    lastDataIndex > firstEmptyIndex &&
+    firstEmptyIndex >= 0
+  ) {
     i++;
     if (lastDataIndex > blocks.length || firstEmptyIndex > blocks.length) {
       console.log({
@@ -86,6 +102,8 @@ const part1 = (rawInput: string) => {
       console.log(i);
     }
   }
+  const dataBlocks = blocks.filter((b) => !b.empty).length;
+  // console.log({ i, lastDataIndex, dataBlocks });
 
   // console.log(blocks);
   const checksum = blocks.reduce(
@@ -101,8 +119,100 @@ const part1 = (rawInput: string) => {
 
 const part2 = (rawInput: string) => {
   const input = parseInput(rawInput);
+  const files: (File | Space)[] = [];
+  const fileIdPositions:number[] = [];
+  let id = 0;
+  let c: string;
+  for (let i = 0; i < input.length; i++) {
+    const size = input[i];
+    if (i % 2) {
+      files.push({ size, type: "space" } as Space);
+    } else {
+      files.push({ id, size, type: "file" } as File);
+      id++;
+      fileIdPositions[id] = i;
+    }
+  }
+  // console.log(input);
 
-  return;
+  let oneMoreRun = true;
+
+  while (oneMoreRun) {
+    oneMoreRun = false;
+
+    // consolidate ALL spaces
+    for (let s = 0; s < files.length; s++) {
+      if (files[s].type === "space") {
+        for (
+          let ss = s + 1;
+          ss < files.length && files[ss].type === "space";
+        ) {
+          files[s].size = files[s].size + files[ss].size;
+          files.splice(ss, 1);
+        }
+      }
+    }
+    // console.log(files.map(f=>({size:f.size, type:f.type, id:f?.id})));
+
+    // move last-most file into leftmost possible space
+    for (let f = files.length - 1; f >= 0; f--) {
+      // console.log('consolidated');
+
+      if (files[f].type === "space") {
+        continue;
+      }
+      const file = files[f];
+      for (let s = 0; s < f; s++) {
+        let space = files[s];
+        if (space.type === "space" && space.size >= file.size) {
+          // found space at j
+
+          // replace file with space (need to do before splicing)
+          files[f] = { type: "space", size: file.size };
+
+          // console.log({sp:space, spi:files[s], f,s})
+
+          // squeeze file in front of space
+          files.splice(s, 0, file);
+
+          // shorten available space
+          space.size = space.size - file.size;
+
+          // delete space if used up
+          if (space.size <= 0) {
+            files.splice(s + 1, 1);
+          }
+          oneMoreRun = true;
+          break;
+        }
+      }
+      if (oneMoreRun) {
+        break;
+      }
+    }
+  }
+
+
+  const blocks:Block[] = [];
+
+  files.forEach((f) => {
+    if (f.type === 'file') {
+      blocks.push(...(Array.from({ length: f.size }, () => ({id:f.id, empty: false,}))))
+    }
+    if (f.type === 'space') {
+      blocks.push(...(Array.from({ length: f.size }, () => ({id:0, empty: true,}))))
+    }
+  })
+  // console.log(blocks);
+  const checksum = blocks.reduce(
+    (prev: number, cur: Block, i) => prev + cur.id * i,
+    0,
+  );
+  // console.log(blocksAsString);
+  console.log(blocks.map((b) => (b.empty ? EMPTY : b.id)).join(""));
+  // console.log(blocks.map((b,i)=>`${i*b.id}`).join('+'))
+
+  return checksum;
 };
 
 run({
@@ -149,9 +259,15 @@ run({
   part2: {
     tests: [
       // {
-      //   input: ``,
-      //   expected: "",
+      //   input: `13234`,
+      //   // expected: '0...11..222' => '022211....' => 0*0 + 1*2 + 2*2 + 3*1 + 4*1 + 5*1 + 6*2 + 7*2 + 8*2  = 60
+      //   expected: 65,
       // },
+      {
+        input: `2333133121414131402`,
+        // expected: '00...111...2...333.44.5555.6666.777.888899',
+        expected: 2858,
+      },
     ],
     solution: part2,
   },
